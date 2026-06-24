@@ -33,16 +33,17 @@ router.post('/departments',      authenticate, requireAdmin, deptCtrl.createDepa
 router.put('/departments/:id',   authenticate, requireAdmin, deptCtrl.updateDepartment);
 
 // ─── Admission Days ────────────────────────────
-router.get('/admission-days',              authenticate, dayCtrl.getAllDays);
-router.get('/admission-days/active',       authenticate, dayCtrl.getActiveDay);
-router.post('/admission-days',             authenticate, requireAdmin, dayCtrl.createDay);
+router.get('/admission-days',                authenticate, dayCtrl.getAllDays);
+router.get('/admission-days/active',         authenticate, dayCtrl.getActiveDay);
+router.post('/admission-days',               authenticate, requireAdmin, dayCtrl.createDay);
 router.patch('/admission-days/:id/activate', authenticate, requireAdmin, dayCtrl.setActiveDay);
 
 // ─── Students ──────────────────────────────────
-router.post('/students',          authenticate, canRegisterStudents, studentCtrl.registerStudent);
-router.get('/students/search',    authenticate, studentCtrl.searchStudents);
-router.get('/students/export',    authenticate, requireAdmin, studentCtrl.exportStudents);
-router.get('/students/:id',       authenticate, studentCtrl.getStudent);
+router.post('/students',            authenticate, canRegisterStudents, studentCtrl.registerStudent);
+router.get('/students/search',      authenticate, studentCtrl.searchStudents);
+router.get('/students/export',      authenticate, requireAdmin, studentCtrl.exportStudents);
+router.delete('/students/all',      authenticate, requireAdmin, studentCtrl.clearAllStudents);  // ← BEFORE /:id
+router.get('/students/:id',         authenticate, studentCtrl.getStudent);
 
 // ─── Queue & Stage Processing ──────────────────
 router.get('/queue/:stage',            authenticate, studentCtrl.getStageQueue);
@@ -62,9 +63,9 @@ router.post('/tokens/generate-excel', authenticate, requireAdmin, upload.single(
 router.post('/tokens/reset',          authenticate, requireAdmin, tokenCtrl.resetSequences);
 
 // ─── Student Preload ───────────────────────────
-router.post('/preload/upload',            authenticate, requireAdmin, upload.single('file'), preloadCtrl.uploadStudents);
-router.get('/preload/list',               authenticate, requireAdmin, preloadCtrl.listPreloaded);
-router.delete('/preload/clear',           authenticate, requireAdmin, preloadCtrl.clearPreloaded);
-router.get('/preload/lookup/:allotment',  authenticate, preloadCtrl.lookupByAllotment);
+router.post('/preload/upload',           authenticate, requireAdmin, upload.single('file'), preloadCtrl.uploadStudents);
+router.get('/preload/list',              authenticate, requireAdmin, preloadCtrl.listPreloaded);
+router.delete('/preload/clear',          authenticate, requireAdmin, preloadCtrl.clearPreloaded);
+router.get('/preload/lookup/:allotment', authenticate, preloadCtrl.lookupByAllotment);
 
 module.exports = router;

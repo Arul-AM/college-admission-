@@ -32,13 +32,6 @@ const registerStudent = async (req, res) => {
     }
     const department = deptResult.rows[0];
 
-    // ── New token logic ──────────────────────────────────────────────────────
-    // 1. Look up preloaded student to get their dept serial (base_token)
-    // 2. Assign next reporting serial for this day+round+dept atomically
-    // 3. Final token = base_token + "-" + reporting_serial
-    //    e.g.  D2-R1-CSE-012-005
-    //          (day-round-dept-deptSerial-reportingSerial)
-
     const preloaded = await query(
       `SELECT * FROM preloaded_students WHERE allotment_number=$1 AND admission_round=$2 AND admission_day=$3`,
       [allotment_number, admission_round, admissionDay]
@@ -47,7 +40,6 @@ const registerStudent = async (req, res) => {
     let tokenNumber;
     if (preloaded.rows.length > 0) {
       const pl = preloaded.rows[0];
-      // Get next reporting serial for this day+round+dept
       const seqResult = await query(`
         INSERT INTO token_sequences (admission_day, admission_round, department_code, last_sequence)
         VALUES ($1, $2, $3, 1)
@@ -59,12 +51,9 @@ const registerStudent = async (req, res) => {
       const reportingSerial = String(seqResult.rows[0].last_sequence).padStart(3, '0');
       tokenNumber = `${pl.base_token}-${reportingSerial}`;
     } else {
-      // Fallback: student not preloaded, use old method
       tokenNumber = await generateToken(admissionDay, admission_round, department.code);
     }
-    // ────────────────────────────────────────────────────────────────────────
 
-    // Determine initial stage based on fee status
     const feePaid = fee_paid === true || fee_paid === 'true';
     const initialStage = feePaid ? 1 : 6;
 
@@ -87,13 +76,11 @@ const registerStudent = async (req, res) => {
 
     const student = studentResult.rows[0];
 
-    // Log initial stage
     await client.query(`
       INSERT INTO stage_history (student_id, stage_number, action, remarks, processed_by)
       VALUES ($1, $2, 'pending', $3, $4)
     `, [student.id, initialStage, remarks || 'Student registered', req.user.id]);
 
-    // Mark preloaded student as registered
     await client.query(
       `UPDATE preloaded_students SET registered=true, registered_at=NOW() WHERE allotment_number=$1 AND admission_round=$2`,
       [allotment_number, admission_round]
@@ -208,7 +195,6 @@ const processStage = async (req, res) => {
     const student = result.rows[0];
     const currentStage = student.current_stage;
 
-    // RBAC: Staff can only process their assigned stage
     if (role === 'staff' && stage_assigned !== currentStage) {
       return res.status(403).json({ error: `You can only process Stage ${stage_assigned} students` });
     }
@@ -227,7 +213,6 @@ const processStage = async (req, res) => {
       if (nextStageMap[currentStage]) {
         nextStage = nextStageMap[currentStage];
       } else if (currentStage === 5) {
-        // Stage 5 completion handled separately
         return res.status(400).json({ error: 'Use the complete admission endpoint for Stage 5' });
       }
     } else {
@@ -282,7 +267,6 @@ const completeAdmission = async (req, res) => {
 
     const rollNum = roll_number.trim().toUpperCase();
 
-    // Check uniqueness
     const rollCheck = await client.query(
       'SELECT id FROM students WHERE roll_number = $1 AND id != $2',
       [rollNum, id]
@@ -497,8 +481,39 @@ const exportStudents = async (req, res) => {
   }
 };
 
+// Clear all student data (Admin only)
+const clearAllStudents = async (req, res) => {
+  try {
+    const { confirmText } = req.body;
+
+    if (confirmText !== 'CLEAR ALL DATA') {
+      return res.status(400).json({
+        success: false,
+        message: 'Confirmation text does not match. Type exactly: CLEAR ALL DATA',
+      });
+    }
+
+    const countResult = await query('SELECT COUNT(*) FROM students');
+    const studentCount = parseInt(countResult.rows[0].count);
+
+    await query('TRUNCATE TABLE stage_history CASCADE');
+    await query('TRUNCATE TABLE token_sequences CASCADE');
+    await query('TRUNCATE TABLE preloaded_students CASCADE');
+    await query('DELETE FROM students');
+
+    return res.json({
+      success: true,
+      message: `Successfully cleared ${studentCount} student record(s).`,
+      studentsRemoved: studentCount,
+    });
+  } catch (err) {
+    console.error('Clear students error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 module.exports = {
   registerStudent, getStageQueue, getStudent,
   processStage, completeAdmission, updateFeeStatus,
-  searchStudents, exportStudents,
+  searchStudents, exportStudents, clearAllStudents,
 };
