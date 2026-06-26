@@ -82,8 +82,3 @@ export const getStaffDashboard = () => api.get('/dashboard/staff');
 export const getAuditLogs = (params?: object) => api.get('/audit-logs', { params });
 
 export default api;
-
-
-// ─── Clear All Students ────────────────────────
-export const clearAllStudents = (confirmText: string) =>
-  api.delete('/students/all', { data: { confirmText } });
