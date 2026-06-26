@@ -11,6 +11,10 @@ const PORT = process.env.PORT || 5000;
 
 // Security middleware
 app.use(helmet());
+
+// ── CORS ─────────────────────────────────────────────────────
+// Reads from FRONTEND_URL environment variable
+// Falls back to localhost for local development
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
@@ -18,7 +22,7 @@ app.use(cors({
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 500,
   message: { error: 'Too many requests. Please try again later.' },
 });
@@ -62,16 +66,8 @@ app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`📡 API available at http://localhost:${PORT}/api`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+  console.log(`🌐 CORS origin: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
   console.log('');
 });
 
 module.exports = app;
-
-
-app.use(cors({
-  origin: [
-    'https://college-admissions.netlify.app',
-    'http://localhost:5173'
-  ],
-  credentials: true,
-}));
