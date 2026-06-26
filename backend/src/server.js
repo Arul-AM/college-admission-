@@ -66,3 +66,12 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
+
+app.use(cors({
+  origin: [
+    'https://college-admissions.netlify.app',
+    'http://localhost:5173'
+  ],
+  credentials: true,
+}));
