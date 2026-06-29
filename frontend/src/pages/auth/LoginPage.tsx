@@ -42,7 +42,6 @@ const LoginPage: React.FC = () => {
       canvas.height = window.innerHeight;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Floating orbs
       for (const o of orbs) {
         o.x += o.vx;
         o.y += o.vy;
@@ -60,7 +59,6 @@ const LoginPage: React.FC = () => {
         ctx.fill();
       }
 
-      // Rising particles
       for (const p of particles) {
         p.y += p.vy;
         if (p.y < -4) {
@@ -106,8 +104,6 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4 relative overflow-hidden">
 
-      {/* === Background Effects === */}
-
       {/* Animated canvas: orbs + particles */}
       <canvas
         ref={canvasRef}
@@ -115,7 +111,7 @@ const LoginPage: React.FC = () => {
         style={{ zIndex: 0 }}
       />
 
-      {/* Dot grid overlay */}
+      {/* Grid overlay */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -148,85 +144,73 @@ const LoginPage: React.FC = () => {
         }}
       />
 
-      {/* === Page Content === */}
+      {/* Page Content */}
       <div className="w-full max-w-md relative" style={{ zIndex: 10 }}>
-        {/* Login Card */}
-<div className="bg-black/40 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
-  <h2 className="text-xl font-semibold text-white mb-6 text-center">Sign In</h2>
 
-  {error && (
-    <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/40 rounded-lg p-3 mb-5 text-red-300 text-sm">
-      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-      {error}
-    </div>
-  )}
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur mb-4">
+            <GraduationCap className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white">Admission Portal</h1>
+          <p className="text-blue-200 mt-2">College Admission Management System</p>
+        </div>
 
-  <form onSubmit={handleSubmit} className="space-y-5">
-    <div>
-      <label className="block text-sm font-medium text-white/80 mb-1">Username</label>
-      <div className="relative">
-        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-        <input
-          type="text"
-          placeholder="Enter your username"
-          value={form.username}
-          onChange={e => setForm({ ...form, username: e.target.value })}
-          className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent"
-          autoFocus
-          autoComplete="username"
-        />
-      </div>
-    </div>
+        {/* Login Card — fully transparent glass */}
+        <div className="bg-transparent backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
+          <h2 className="text-xl font-semibold text-white mb-6 text-center">Sign In</h2>
 
-    <div>
-      <label className="block text-sm font-medium text-white/80 mb-1">Password</label>
-      <div className="relative">
-        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-        <input
-          type="password"
-          placeholder="Enter your password"
-          value={form.password}
-          onChange={e => setForm({ ...form, password: e.target.value })}
-          className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent"
-          autoComplete="current-password"
-        />
-      </div>
-    </div>
+          {error && (
+            <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/40 rounded-lg p-3 mb-5 text-red-300 text-sm">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {error}
+            </div>
+          )}
 
-    <button
-      type="submit"
-      disabled={loading}
-      className="w-full bg-white/20 hover:bg-white/30 disabled:bg-white/10 text-white font-semibold py-2.5 rounded-lg border border-white/30 transition-colors duration-200"
-    >
-      {loading ? 'Signing in...' : 'Sign In'}
-    </button>
-  </form>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-1">Username</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                <input
+                  type="text"
+                  placeholder="Enter your username"
+                  value={form.username}
+                  onChange={e => setForm({ ...form, username: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent"
+                  autoFocus
+                  autoComplete="username"
+                />
+              </div>
+            </div>
 
-  {/* Demo credentials */}
-  <div className="mt-6 pt-5 border-t border-white/10">
-    <p className="text-xs text-white/40 text-center font-medium mb-3">Demo Credentials</p>
-    <div className="grid grid-cols-2 gap-2 text-xs">
-      {[
-        { label: 'Admin', un: 'admin', pw: 'Admin@123' },
-        { label: 'Stage 1', un: 'staff1', pw: 'Staff@123' },
-        { label: 'Stage 5', un: 'staff5', pw: 'Staff@123' },
-        { label: 'Help Desk', un: 'staff6', pw: 'Staff@123' },
-      ].map(c => (
-        <button
-          key={c.un}
-          onClick={() => setForm({ username: c.un, password: c.pw })}
-          className="bg-white/10 hover:bg-white/20 border border-white/20 rounded p-2 text-left transition-colors"
-        >
-          <div className="font-medium text-white/80">{c.label}</div>
-          <div className="text-white/40">{c.un}</div>
-        </button>
-      ))}
-    </div>
-  </div>
-</div>
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-1">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent"
+                  autoComplete="current-password"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-white/20 hover:bg-white/30 disabled:bg-white/10 text-white font-semibold py-2.5 rounded-lg border border-white/30 transition-colors duration-200"
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+
           {/* Demo credentials */}
-          <div className="mt-6 pt-5 border-t border-gray-100">
-            <p className="text-xs text-gray-500 text-center font-medium mb-3">Demo Credentials</p>
+          <div className="mt-6 pt-5 border-t border-white/10">
+            <p className="text-xs text-white/40 text-center font-medium mb-3">Demo Credentials</p>
             <div className="grid grid-cols-2 gap-2 text-xs">
               {[
                 { label: 'Admin', un: 'admin', pw: 'Admin@123' },
@@ -237,10 +221,10 @@ const LoginPage: React.FC = () => {
                 <button
                   key={c.un}
                   onClick={() => setForm({ username: c.un, password: c.pw })}
-                  className="bg-gray-50 hover:bg-blue-50 border border-gray-200 rounded p-2 text-left transition-colors"
+                  className="bg-white/10 hover:bg-white/20 border border-white/20 rounded p-2 text-left transition-colors"
                 >
-                  <div className="font-medium text-gray-700">{c.label}</div>
-                  <div className="text-gray-400">{c.un}</div>
+                  <div className="font-medium text-white/80">{c.label}</div>
+                  <div className="text-white/40">{c.un}</div>
                 </button>
               ))}
             </div>
@@ -252,7 +236,6 @@ const LoginPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Shimmer keyframe */}
       <style>{`
         @keyframes shimmer {
           0%, 100% { background-position: 200% 0; }
