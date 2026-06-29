@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Lock, User, AlertCircle } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
@@ -11,6 +11,74 @@ const LoginPage: React.FC = () => {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animRef = useRef<number>();
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d')!;
+
+    const orbs = Array.from({ length: 6 }, (_, i) => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: 80 + Math.random() * 140,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      hue: [210, 230, 250, 200, 220, 240][i],
+      alpha: 0.12 + Math.random() * 0.1,
+    }));
+
+    const particles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: 0.6 + Math.random() * 1.6,
+      vy: -0.25 - Math.random() * 0.35,
+      alpha: 0.2 + Math.random() * 0.5,
+    }));
+
+    const draw = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Floating orbs
+      for (const o of orbs) {
+        o.x += o.vx;
+        o.y += o.vy;
+        if (o.x < -o.r) o.x = canvas.width + o.r;
+        if (o.x > canvas.width + o.r) o.x = -o.r;
+        if (o.y < -o.r) o.y = canvas.height + o.r;
+        if (o.y > canvas.height + o.r) o.y = -o.r;
+
+        const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+        g.addColorStop(0, `hsla(${o.hue},80%,65%,${o.alpha})`);
+        g.addColorStop(1, `hsla(${o.hue},80%,65%,0)`);
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      }
+
+      // Rising particles
+      for (const p of particles) {
+        p.y += p.vy;
+        if (p.y < -4) {
+          p.y = canvas.height + 4;
+          p.x = Math.random() * canvas.width;
+        }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+        ctx.fill();
+      }
+
+      animRef.current = requestAnimationFrame(draw);
+    };
+
+    draw();
+    return () => cancelAnimationFrame(animRef.current!);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +104,52 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4 relative overflow-hidden">
+
+      {/* === Background Effects === */}
+
+      {/* Animated canvas: orbs + particles */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 0 }}
+      />
+
+      {/* Dot grid overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 1,
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }}
+      />
+
+      {/* Shimmer sweep */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 2,
+          background:
+            'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.04) 50%, transparent 60%)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 7s ease-in-out infinite',
+        }}
+      />
+
+      {/* Vignette */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          zIndex: 3,
+          background:
+            'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%)',
+        }}
+      />
+
+      {/* === Page Content === */}
+      <div className="w-full max-w-md relative" style={{ zIndex: 10 }}>
         {/* Logo / Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur mb-4">
@@ -123,9 +235,17 @@ const LoginPage: React.FC = () => {
         </div>
 
         <p className="text-center text-blue-200 text-sm mt-6">
-          © 2024 College Admission Management System
+          © 2026 College Admission Management System
         </p>
       </div>
+
+      {/* Shimmer keyframe */}
+      <style>{`
+        @keyframes shimmer {
+          0%, 100% { background-position: 200% 0; }
+          50% { background-position: -200% 0; }
+        }
+      `}</style>
     </div>
   );
 };
