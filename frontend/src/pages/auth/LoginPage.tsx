@@ -101,15 +101,6 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const staffCredentials = [
-    { label: 'Stage 1', un: 'staff1', pw: 'Staff@123' },
-    { label: 'Stage 2', un: 'staff2', pw: 'Staff@123' },
-    { label: 'Stage 3', un: 'staff3', pw: 'Staff@123' },
-    { label: 'Stage 4', un: 'staff4', pw: 'Staff@123' },
-    { label: 'Stage 5', un: 'staff5', pw: 'Staff@123' },
-    { label: 'Help Desk', un: 'staff6', pw: 'Staff@123' },
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4 relative overflow-hidden">
 
@@ -165,9 +156,9 @@ const LoginPage: React.FC = () => {
           <p className="text-blue-200 mt-2">College Admission Management System</p>
         </div>
 
-        {/* Login Card */}
+        {/* Login Card — fully transparent glass */}
         <div className="bg-transparent backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
-          <h2 className="text-xl font-semibold text-white mb-6 text-center">Staff Sign In</h2>
+          <h2 className="text-xl font-semibold text-white mb-6 text-center">Sign In</h2>
 
           {error && (
             <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/40 rounded-lg p-3 mb-5 text-red-300 text-sm">
@@ -217,11 +208,16 @@ const LoginPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Staff Quick Login */}
+          {/* Demo credentials */}
           <div className="mt-6 pt-5 border-t border-white/10">
-            <p className="text-xs text-white/40 text-center font-medium mb-3">Quick Login — Staff</p>
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              {staffCredentials.map(c => (
+            <p className="text-xs text-white/40 text-center font-medium mb-3">Demo Credentials</p>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {[
+                { label: 'Admin', un: 'admin', pw: 'Admin@123' },
+                { label: 'Stage 1', un: 'staff1', pw: 'Staff@123' },
+                { label: 'Stage 5', un: 'staff5', pw: 'Staff@123' },
+                { label: 'Help Desk', un: 'staff6', pw: 'Staff@123' },
+              ].map(c => (
                 <button
                   key={c.un}
                   onClick={() => setForm({ username: c.un, password: c.pw })}
