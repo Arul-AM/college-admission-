@@ -17,7 +17,7 @@ const seed = async () => {
     `, [adminHash]);
     const adminId = adminRes.rows[0].id;
 
-    // Create staff users for each stage
+    // Create staff users — force update password if exists
     const staffHash = await bcrypt.hash('Staff@123', 12);
     const stages = [
       { username: 'staff1', name: 'Stage 1 Staff - Document Verification', stage: 1 },
@@ -32,7 +32,7 @@ const seed = async () => {
       await client.query(`
         INSERT INTO users (username, password_hash, full_name, role, stage_assigned, created_by)
         VALUES ($1, $2, $3, 'staff', $4, $5)
-        ON CONFLICT (username) DO NOTHING;
+        ON CONFLICT (username) DO UPDATE SET password_hash = $2, stage_assigned = $4;
       `, [s.username, staffHash, s.name, s.stage, adminId]);
     }
 
@@ -61,7 +61,7 @@ const seed = async () => {
         INSERT INTO admission_days (name, is_active)
         VALUES ($1, $2)
         ON CONFLICT (name) DO NOTHING;
-      `, [days[i], i === 0]); // D1 active by default
+      `, [days[i], i === 0]);
     }
 
     await client.query('COMMIT');
