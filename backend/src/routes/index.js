@@ -1,4 +1,4 @@
-const express = require('express');
+`const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { authenticate, requireAdmin, canRegisterStudents } = require('../middleware/auth');
@@ -69,3 +69,4 @@ router.delete('/preload/clear',          authenticate, requireAdmin, preloadCtrl
 router.get('/preload/lookup/:allotment', authenticate, preloadCtrl.lookupByAllotment);
 
 module.exports = router;
+`
