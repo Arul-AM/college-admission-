@@ -6,14 +6,12 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach JWT to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Auto logout on 401
 api.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -60,6 +58,9 @@ export const registerStudent = (data: object) => api.post('/students', data);
 export const getStudent = (id: string) => api.get(`/students/${id}`);
 export const searchStudents = (params: object) => api.get('/students/search', { params });
 export const exportStudents = () => api.get('/students/export', { responseType: 'blob' });
+export const deleteStudent = (id: string) => api.delete(`/students/${id}`);
+export const clearAllStudents = (confirmText: string) =>
+  api.delete('/students/all', { data: { confirmText } });
 
 // ─── Queue ─────────────────────────────────────
 export const getStageQueue = (stage: number) => api.get(`/queue/${stage}`);

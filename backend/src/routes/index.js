@@ -1,4 +1,4 @@
-`const express = require('express');
+const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { authenticate, requireAdmin, canRegisterStudents } = require('../middleware/auth');
@@ -44,6 +44,7 @@ router.get('/students/search',      authenticate, studentCtrl.searchStudents);
 router.get('/students/export',      authenticate, requireAdmin, studentCtrl.exportStudents);
 router.delete('/students/all',      authenticate, requireAdmin, studentCtrl.clearAllStudents);  // ← BEFORE /:id
 router.get('/students/:id',         authenticate, studentCtrl.getStudent);
+router.delete('/students/:id',      authenticate, requireAdmin, studentCtrl.deleteStudent);     // ← Single delete
 
 // ─── Queue & Stage Processing ──────────────────
 router.get('/queue/:stage',            authenticate, studentCtrl.getStageQueue);
@@ -69,4 +70,3 @@ router.delete('/preload/clear',          authenticate, requireAdmin, preloadCtrl
 router.get('/preload/lookup/:allotment', authenticate, preloadCtrl.lookupByAllotment);
 
 module.exports = router;
-`

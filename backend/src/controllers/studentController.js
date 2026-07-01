@@ -18,14 +18,12 @@ const registerStudent = async (req, res) => {
       return res.status(400).json({ error: 'Invalid admission round. Use R1, UP1, R2, or UP2' });
     }
 
-    // Get active admission day
     const dayResult = await query('SELECT name FROM admission_days WHERE is_active = true LIMIT 1');
     if (!dayResult.rows.length) {
       return res.status(400).json({ error: 'No active admission day configured. Contact admin.' });
     }
     const admissionDay = dayResult.rows[0].name;
 
-    // Get department
     const deptResult = await query('SELECT * FROM departments WHERE id = $1 AND is_active = true', [department_id]);
     if (!deptResult.rows.length) {
       return res.status(404).json({ error: 'Department not found or inactive' });
@@ -481,7 +479,47 @@ const exportStudents = async (req, res) => {
   }
 };
 
-// Clear all student data (Admin only)
+// ── Delete single student (Admin only) ───────────────────────
+const deleteStudent = async (req, res) => {
+  const client = await getClient();
+  try {
+    const { id } = req.params;
+
+    const result = await client.query('SELECT * FROM students WHERE id = $1', [id]);
+    if (!result.rows.length) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    const student = result.rows[0];
+
+    // Prevent deleting completed admissions
+    if (student.admission_status === 'Completed') {
+      return res.status(400).json({ error: 'Cannot delete a completed admission record' });
+    }
+
+    await client.query('BEGIN');
+    await client.query('DELETE FROM stage_history WHERE student_id = $1', [id]);
+    await client.query('DELETE FROM students WHERE id = $1', [id]);
+    await client.query('COMMIT');
+
+    await auditLog({
+      userId: req.user.id, username: req.user.username,
+      action: 'STUDENT_REGISTER',
+      description: `Student deleted: ${student.student_name} (${student.token_number})`,
+      entityType: 'student', entityId: id, ipAddress: getClientIP(req),
+    });
+
+    res.json({ message: `Student ${student.student_name} deleted successfully` });
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('Delete student error:', err);
+    res.status(500).json({ error: 'Server error' });
+  } finally {
+    client.release();
+  }
+};
+
+// ── Clear all student data (Admin only) ───────────────────────
 const clearAllStudents = async (req, res) => {
   try {
     const { confirmText } = req.body;
@@ -501,6 +539,13 @@ const clearAllStudents = async (req, res) => {
     await query('TRUNCATE TABLE preloaded_students CASCADE');
     await query('DELETE FROM students');
 
+    await auditLog({
+      userId: req.user.id, username: req.user.username,
+      action: 'STUDENT_REGISTER',
+      description: `All student data cleared by admin — ${studentCount} records removed`,
+      ipAddress: getClientIP(req),
+    });
+
     return res.json({
       success: true,
       message: `Successfully cleared ${studentCount} student record(s).`,
@@ -515,5 +560,6 @@ const clearAllStudents = async (req, res) => {
 module.exports = {
   registerStudent, getStageQueue, getStudent,
   processStage, completeAdmission, updateFeeStatus,
-  searchStudents, exportStudents, clearAllStudents,
+  searchStudents, exportStudents,
+  deleteStudent, clearAllStudents,
 };

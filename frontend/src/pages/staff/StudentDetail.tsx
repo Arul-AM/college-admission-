@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Trash2, AlertOctagon } from 'lucide-react';
 import { getStudent } from '../../services/api';
+import api from '../../services/api';
 import type { Student, StageHistory } from '../../types';
 import { STAGE_NAMES, STAGE_COLORS, STATUS_COLORS, ADMISSION_ROUNDS } from '../../constants';
 import { formatDate } from '../../utils';
+import useAuthStore from '../../store/authStore';
 
 const StudentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAdmin } = useAuthStore();
   const [student, setStudent] = useState<Student | null>(null);
   const [history, setHistory] = useState<StageHistory[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Delete state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -21,6 +29,19 @@ const StudentDetail: React.FC = () => {
       }).finally(() => setLoading(false));
     }
   }, [id]);
+
+  const handleDelete = async () => {
+    if (!student) return;
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await api.delete(`/students/${student.id}`);
+      navigate(-1);
+    } catch (err: any) {
+      setDeleteError(err.response?.data?.error || 'Failed to delete student');
+      setDeleting(false);
+    }
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -37,11 +58,25 @@ const StudentDetail: React.FC = () => {
     </div>
   );
 
+  const canDelete = student.admission_status !== 'Completed';
+
   return (
     <div className="max-w-3xl mx-auto space-y-5">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
-        <ArrowLeft className="w-4 h-4" /> Back
-      </button>
+      <div className="flex items-center justify-between">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+
+        {/* Delete button — admin only */}
+        {isAdmin() && canDelete && (
+          <button
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg transition"
+          >
+            <Trash2 className="w-4 h-4" /> Delete Student
+          </button>
+        )}
+      </div>
 
       {/* Header */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -98,12 +133,10 @@ const StudentDetail: React.FC = () => {
           <p className="text-gray-400 text-sm">No history yet.</p>
         ) : (
           <div className="relative">
-            {/* Timeline line */}
             <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
             <div className="space-y-4">
-              {history.map((h, idx) => (
+              {history.map((h) => (
                 <div key={h.id} className="flex gap-4 relative">
-                  {/* Dot */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10 text-xs font-bold ${
                     h.action === 'approved' ? 'bg-green-500 text-white' :
                     h.action === 'rejected' ? 'bg-red-500 text-white' :
@@ -112,7 +145,6 @@ const StudentDetail: React.FC = () => {
                   }`}>
                     {h.stage_number}
                   </div>
-
                   <div className={`flex-1 rounded-xl p-4 border ${
                     h.action === 'approved' ? 'border-green-200 bg-green-50' :
                     h.action === 'rejected' ? 'border-red-200 bg-red-50' :
@@ -142,6 +174,52 @@ const StudentDetail: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center gap-3 px-6 pt-5 pb-4 border-b border-gray-100">
+              <div className="w-9 h-9 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertOctagon className="w-5 h-5 text-red-600" />
+              </div>
+              <h2 className="font-semibold text-gray-900">Delete Student</h2>
+            </div>
+
+            <div className="px-6 py-5 space-y-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-800">
+                <p className="font-semibold mb-1">This will permanently delete:</p>
+                <p>• <span className="font-mono font-bold">{student.token_number}</span> — {student.student_name}</p>
+                <p>• All stage history for this student</p>
+              </div>
+
+              {deleteError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+                  {deleteError}
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShowDeleteDialog(false); setDeleteError(''); }}
+                  disabled={deleting}
+                  className="flex-1 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 py-2.5 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 flex items-center justify-center gap-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 py-2.5 rounded-lg transition disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {deleting ? 'Deleting…' : 'Yes, Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
