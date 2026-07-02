@@ -201,18 +201,17 @@ const processStage = async (req, res) => {
       return res.status(400).json({ error: 'Student record is locked (completed or rejected)' });
     }
 
+    if (action === 'approved' && currentStage === 5) {
+      return res.status(400).json({ error: 'Use the complete admission endpoint for Stage 5' });
+    }
+
     await client.query('BEGIN');
 
     let nextStage = currentStage;
     let newStatus = student.admission_status;
 
     if (action === 'approved') {
-      const nextStageMap = STAGE_FLOW;
-      if (nextStageMap[currentStage]) {
-        nextStage = nextStageMap[currentStage];
-      } else if (currentStage === 5) {
-        return res.status(400).json({ error: 'Use the complete admission endpoint for Stage 5' });
-      }
+      nextStage = STAGE_FLOW[currentStage] || currentStage;
     } else {
       newStatus = ADMISSION_STATUS.REJECTED;
     }

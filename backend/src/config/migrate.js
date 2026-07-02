@@ -126,6 +126,8 @@ const createTables = async () => {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_students_allotment   ON students(allotment_number);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_students_stage       ON students(current_stage);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_students_status      ON students(admission_status);`);
+    // Composite index covers the stage-queue query (WHERE current_stage = $1 AND admission_status NOT IN (...))
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_students_stage_status ON students(current_stage, admission_status);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_stage_history_student ON stage_history(student_id);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_audit_logs_user      ON audit_logs(user_id);`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_audit_logs_created   ON audit_logs(created_at DESC);`);
