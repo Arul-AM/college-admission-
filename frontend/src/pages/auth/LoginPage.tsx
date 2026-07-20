@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, Lock, User, AlertCircle } from 'lucide-react';
+import { GraduationCap, Lock, User, AlertCircle, MapPin, BookOpen } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { login } from '../../services/api';
 import { getErrorMessage } from '../../utils';
@@ -144,96 +144,145 @@ const LoginPage: React.FC = () => {
         }}
       />
 
-      {/* Page Content */}
-      <div className="w-full max-w-md relative" style={{ zIndex: 10 }}>
+      {/* Page Content — two columns on large screens: CEG info + login card */}
+      <div
+        className="w-full max-w-5xl relative grid grid-cols-1 lg:grid-cols-5 gap-10 items-center"
+        style={{ zIndex: 10 }}
+      >
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur mb-4">
-            <GraduationCap className="w-10 h-10 text-white" />
+        {/* Left panel — CEG institutional info, fills the empty space on wide screens */}
+        <div className="hidden lg:flex lg:col-span-3 flex-col justify-center pr-8 border-r border-white/10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur flex items-center justify-center">
+              <GraduationCap className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <p className="text-white font-semibold text-lg leading-tight">
+                College of Engineering, Guindy
+              </p>
+              <p className="text-blue-200 text-sm">Anna University, Chennai</p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-white">Admission Portal</h1>
-          <p className="text-blue-200 mt-2">College Admission Management System</p>
-        </div>
 
-        {/* Login Card — fully transparent glass */}
-        <div className="bg-transparent backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
-          <h2 className="text-xl font-semibold text-white mb-6 text-center">Sign In</h2>
+          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
+            Admission Management<br />System
+          </h2>
+          <p className="text-blue-100/80 text-base leading-relaxed mb-8 max-w-md">
+            A unified platform for processing student admissions across
+            document verification, certificate checks, and final enrollment —
+            built for CEG's admissions staff and administrators.
+          </p>
 
-          {error && (
-            <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/40 rounded-lg p-3 mb-5 text-red-300 text-sm">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              {error}
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <BookOpen className="w-5 h-5 text-blue-200 mt-0.5 flex-shrink-0" />
+              <p className="text-blue-100/70 text-sm">
+                Established in 1794 — Asia's oldest technical institution
+              </p>
             </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-white/80 mb-1">Username</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                <input
-                  type="text"
-                  placeholder="Enter your username"
-                  value={form.username}
-                  onChange={e => setForm({ ...form, username: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent"
-                  autoFocus
-                  autoComplete="username"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-white/80 mb-1">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                <input
-                  type="password"
-                  placeholder="Enter your password"
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent"
-                  autoComplete="current-password"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-white/20 hover:bg-white/30 disabled:bg-white/10 text-white font-semibold py-2.5 rounded-lg border border-white/30 transition-colors duration-200"
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </form>
-
-          {/* Demo credentials */}
-          <div className="mt-6 pt-5 border-t border-white/10">
-            <p className="text-xs text-white/40 text-center font-medium mb-3">Demo Credentials</p>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {[
-                { label: 'Admin', un: 'admin', pw: 'Admin@123' },
-                { label: 'Stage 1', un: 'staff1', pw: 'Staff@123' },
-                { label: 'Stage 5', un: 'staff5', pw: 'Staff@123' },
-                { label: 'Help Desk', un: 'staff6', pw: 'Staff@123' },
-              ].map(c => (
-                <button
-                  key={c.un}
-                  onClick={() => setForm({ username: c.un, password: c.pw })}
-                  className="bg-white/10 hover:bg-white/20 border border-white/20 rounded p-2 text-left transition-colors"
-                >
-                  <div className="font-medium text-white/80">{c.label}</div>
-                  <div className="text-white/40">{c.un}</div>
-                </button>
-              ))}
+            <div className="flex items-start gap-3">
+              <MapPin className="w-5 h-5 text-blue-200 mt-0.5 flex-shrink-0" />
+              <p className="text-blue-100/70 text-sm">
+                Sardar Patel Road, Guindy, Chennai&nbsp;–&nbsp;600025
+              </p>
             </div>
           </div>
         </div>
 
-        <p className="text-center text-blue-200 text-sm mt-6">
-          © 2026 College Admission Management System
-        </p>
+        {/* Right panel — login card */}
+        <div className="lg:col-span-2 w-full max-w-md mx-auto">
+
+          {/* Header (mobile + tablet only, since left panel covers this on desktop) */}
+          <div className="text-center mb-8 lg:hidden">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur mb-4">
+              <GraduationCap className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-white">Admission Portal</h1>
+            <p className="text-blue-200 mt-2">College Admission Management System</p>
+          </div>
+
+          {/* Login Card — fully transparent glass */}
+          <div className="bg-transparent backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
+            <h2 className="text-xl font-semibold text-white mb-6 text-center">Sign In</h2>
+
+            {error && (
+              <div className="flex items-center gap-2 bg-red-500/20 border border-red-400/40 rounded-lg p-3 mb-5 text-red-300 text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-1">Username</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                  <input
+                    type="text"
+                    placeholder="Enter your username"
+                    value={form.username}
+                    onChange={e => setForm({ ...form, username: e.target.value })}
+                    className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent"
+                    autoFocus
+                    autoComplete="username"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-1">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                  <input
+                    type="password"
+                    placeholder="Enter your password"
+                    value={form.password}
+                    onChange={e => setForm({ ...form, password: e.target.value })}
+                    className="w-full pl-10 pr-4 py-2.5 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/40 focus:border-transparent"
+                    autoComplete="current-password"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-white/20 hover:bg-white/30 disabled:bg-white/10 text-white font-semibold py-2.5 rounded-lg border border-white/30 transition-colors duration-200"
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
+              </button>
+            </form>
+
+            {/* Demo credentials — all 6 staff stages, Admin removed */}
+            <div className="mt-6 pt-5 border-t border-white/10">
+              <p className="text-xs text-white/40 text-center font-medium mb-3">Staff Login Shortcuts</p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {[
+                  { label: 'Stage 1 · Document Verification', short: 'Stage 1', un: 'staff1', pw: 'Staff@123' },
+                  { label: 'Stage 2 · Certificate Verification', short: 'Stage 2', un: 'staff2', pw: 'Staff@123' },
+                  { label: 'Stage 3 · Online Verification', short: 'Stage 3', un: 'staff3', pw: 'Staff@123' },
+                  { label: 'Stage 4 · Admission Verification', short: 'Stage 4', un: 'staff4', pw: 'Staff@123' },
+                  { label: 'Stage 5 · Admission Completion', short: 'Stage 5', un: 'staff5', pw: 'Staff@123' },
+                  { label: 'Help Desk', short: 'Help Desk', un: 'staff6', pw: 'Staff@123' },
+                ].map(c => (
+                  <button
+                    key={c.un}
+                    title={c.label}
+                    onClick={() => setForm({ username: c.un, password: c.pw })}
+                    className="bg-white/10 hover:bg-white/20 border border-white/20 rounded p-2 text-left transition-colors"
+                  >
+                    <div className="font-medium text-white/80">{c.short}</div>
+                    <div className="text-white/40">{c.un}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <p className="text-center text-blue-200 text-sm mt-6">
+            © 2026 College Admission Management System
+          </p>
+        </div>
       </div>
 
       <style>{`
