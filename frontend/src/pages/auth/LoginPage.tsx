@@ -16,11 +16,27 @@ const LoginPage: React.FC = () => {
 
   // Campus banner — drop real CEG photos into /public/images/campus/
   // and update this list with the filenames. Captions are optional.
+  // Sourced from Wikimedia Commons (CC-BY-SA) — verify each file's category
+  // page confirms "College of Engineering, Guindy" before adding new ones,
+  // and credit photographers somewhere on-site (e.g. an About/Credits section)
+  // per the CC-BY-SA attribution requirement.
   const campusPhotos = [
-    { src: '/images/campus/ceg-main-building.jpg', caption: 'CEG Main Building' },
-    { src: '/images/campus/ceg-campus-grounds.jpg', caption: 'Campus Grounds' },
-    { src: '/images/campus/ceg-library.jpg', caption: 'Anna Centenary Library' },
-    { src: '/images/campus/ceg-convocation.jpg', caption: 'Convocation Hall' },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Anna_university_02.jpg/960px-Anna_university_02.jpg',
+      caption: 'Anna University Campus',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Anna_university_Auditorium.jpg/960px-Anna_university_Auditorium.jpg',
+      caption: 'Auditorium',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Anna_university_3.jpg/960px-Anna_university_3.jpg',
+      caption: 'Campus View',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Anna_university_04.jpg/960px-Anna_university_04.jpg',
+      caption: 'Campus Grounds',
+    },
   ];
   const [bannerIndex, setBannerIndex] = useState(0);
 
