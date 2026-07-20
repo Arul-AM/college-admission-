@@ -14,6 +14,23 @@ const LoginPage: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>();
 
+  // Campus banner — drop real CEG photos into /public/images/campus/
+  // and update this list with the filenames. Captions are optional.
+  const campusPhotos = [
+    { src: '/images/campus/ceg-main-building.jpg', caption: 'CEG Main Building' },
+    { src: '/images/campus/ceg-campus-grounds.jpg', caption: 'Campus Grounds' },
+    { src: '/images/campus/ceg-library.jpg', caption: 'Anna Centenary Library' },
+    { src: '/images/campus/ceg-convocation.jpg', caption: 'Convocation Hall' },
+  ];
+  const [bannerIndex, setBannerIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBannerIndex((i) => (i + 1) % campusPhotos.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -167,11 +184,43 @@ const LoginPage: React.FC = () => {
           <h2 className="text-4xl font-bold text-white leading-tight mb-4">
             Admission Management<br />System
           </h2>
-          <p className="text-blue-100/80 text-base leading-relaxed mb-8 max-w-md">
+          <p className="text-blue-100/80 text-base leading-relaxed mb-6 max-w-md">
             A unified platform for processing student admissions across
             document verification, certificate checks, and final enrollment —
             built for CEG's admissions staff and administrators.
           </p>
+
+          {/* Autoplay campus photo banner */}
+          <div className="relative w-full max-w-md h-56 rounded-xl overflow-hidden border border-white/15 shadow-lg mb-8 bg-white/5">
+            {campusPhotos.map((photo, i) => (
+              <img
+                key={photo.src}
+                src={photo.src}
+                alt={photo.caption}
+                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out"
+                style={{ opacity: i === bannerIndex ? 1 : 0 }}
+              />
+            ))}
+            {/* Caption + gradient scrim */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-4 pt-8 pb-3">
+              <p className="text-white text-sm font-medium">{campusPhotos[bannerIndex].caption}</p>
+            </div>
+            {/* Dots */}
+            <div className="absolute top-3 right-3 flex gap-1.5">
+              {campusPhotos.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setBannerIndex(i)}
+                  aria-label={`Show photo ${i + 1}`}
+                  className="w-1.5 h-1.5 rounded-full transition-all"
+                  style={{
+                    backgroundColor: i === bannerIndex ? 'white' : 'rgba(255,255,255,0.4)',
+                    width: i === bannerIndex ? '14px' : '6px',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
 
           <div className="space-y-4">
             <div className="flex items-start gap-3">
